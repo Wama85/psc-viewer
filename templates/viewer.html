@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>PSC Viewer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="app">
+
+    <header>
+        <div>
+            <h1>PSC Viewer</h1>
+            <p>Vista previa online para archivos de PSeInt</p>
+        </div>
+    </header>
+
+    <section class="buscador">
+
+        <form action="/viewer" method="GET">
+
+            <input
+                type="text"
+                name="url"
+                placeholder="Pega aquí la URL de Google Drive..."
+                required
+            >
+
+            <button type="submit">
+                Mostrar
+            </button>
+
+        </form>
+
+    </section>
+
+    {% if nombre_archivo %}
+        <div class="archivo">
+            Archivo: {{ nombre_archivo }}
+        </div>
+    {% endif %}
+
+    {% if mensaje %}
+        <div class="mensaje">
+            {{ mensaje }}
+        </div>
+    {% endif %}
+
+    <main>
+        <pre id="codigo">{{ codigo }}</pre>
+    </main>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const pre = document.getElementById("codigo");
+
+    if (!pre) {
+        return;
+    }
+
+    let texto = pre.textContent;
+
+    if (!texto.trim()) {
+        return;
+    }
+
+    const escapeHTML = function (str) {
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    };
+
+    texto = escapeHTML(texto);
+
+    texto = texto.replace(/"([^"]*)"/g, function (match) {
+        return '<span class="string">' + match + '</span>';
+    });
+
+    texto = texto.replace(/\b(Algoritmo|FinAlgoritmo|Proceso|FinProceso|Definir|Como|Entero|Real|Caracter|Logico|Leer|Escribir|Si|Entonces|Sino|FinSi|Mientras|Hacer|FinMientras|Para|Hasta|Con|Paso|FinPara|Funcion|FinFuncion|Retornar)\b/gi, function (match) {
+        return '<span class="keyword">' + match + '</span>';
+    });
+
+    texto = texto.replace(/\b(\d+)\b/g, function (match) {
+        return '<span class="number">' + match + '</span>';
+    });
+
+    texto = texto.replace(/(&lt;-|←)/g, function (match) {
+        return '<span class="operator">' + match + '</span>';
+    });
+
+    pre.innerHTML = texto;
+
+});
+</script>
+
+</body>
+</html>

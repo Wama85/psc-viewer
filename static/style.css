@@ -1,0 +1,124 @@
+body {
+    margin: 0;
+    background: #0f172a;
+    font-family: Arial, sans-serif;
+    color: #e5e7eb;
+}
+
+.app {
+    width: 90%;
+    max-width: 1100px;
+    margin: 30px auto;
+}
+
+header {
+    background: #111827;
+    padding: 20px;
+    border-radius: 14px 14px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #374151;
+}
+
+h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+p {
+    margin: 5px 0 0;
+    color: #9ca3af;
+}
+
+.badge {
+    background: #2563eb;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.mensaje {
+    background: #7f1d1d;
+    padding: 12px 20px;
+    border-bottom: 1px solid #991b1b;
+    color: #fecaca;
+}
+
+main {
+    background: #1e1e1e;
+    padding: 25px;
+    border-radius: 0 0 14px 14px;
+    overflow-x: auto;
+}
+
+pre {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.keyword {
+    color: #60a5fa;
+    font-weight: bold;
+}
+
+.string {
+    color: #86efac;
+}
+
+.number {
+    color: #facc15;
+}
+
+.operator {
+    color: #f472b6;
+    font-weight: bold;
+}
+.buscador{
+    background:#111827;
+    padding:20px;
+    border-bottom:1px solid #374151;
+}
+
+.buscador form{
+    display:flex;
+    gap:10px;
+}
+
+.buscador input{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:#1f2937;
+    color:white;
+    font-size:15px;
+}
+
+.buscador input:focus{
+    outline:none;
+    border:1px solid #2563eb;
+}
+
+.buscador button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:14px 22px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.buscador button:hover{
+    background:#1d4ed8;
+}
+
+.archivo{
+    background:#1e293b;
+    padding:14px 20px;
+    border-bottom:1px solid #334155;
+    color:#93c5fd;
+}
