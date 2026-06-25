@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+venv/
+.env/
+
+# Flask
+instance/
+.webassets-cache
+
+# VSCode
+.vscode/
+
+# Mac
+.DS_Store
+
+# Google OAuth
+token.json
+credentials.json
+# Logs
+*.log
+
+# IDE
+.idea/
+
+# Windows
+Thumbs.db
