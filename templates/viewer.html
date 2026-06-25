@@ -18,7 +18,7 @@
 
     <section class="buscador">
 
-        <form action="/viewer" method="GET">
+       <form action="/codeviewer/viewer" method="GET">
 
             <input
                 type="text"
@@ -48,7 +48,7 @@
     {% endif %}
 
     <main>
-        <pre id="codigo">{{ codigo }}</pre>
+        <pre id="codigo" data-lenguaje="{{ lenguaje }}">{{ codigo }}</pre>
     </main>
 
 </div>
