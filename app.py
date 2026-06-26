@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.secret_key = "code_viewer_clave_segura_123"
 
 # Local:
-BASE_PATH = ""
+BASE_PATH = "/codeviewer"
 
 # En cPanel, si tu app está en /codeviewer, usa:
 # BASE_PATH = "/codeviewer"
@@ -266,8 +266,4 @@ def credentials_to_dict(credentials):
 
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=5001,
-        debug=True
-    )
+    app.run(debug=True)
