@@ -1,6 +1,7 @@
 import os
 import io
 import re
+import json
 
 from flask import Flask, render_template, request, redirect, session, url_for
 from google.oauth2.credentials import Credentials
@@ -11,7 +12,13 @@ from googleapiclient.http import MediaIoBaseDownload
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 app = Flask(__name__)
-app.secret_key = "psc_viewer_clave_segura_123"
+app.secret_key = "code_viewer_clave_segura_123"
+
+# Local:
+BASE_PATH = ""
+
+# En cPanel, si tu app está en /codeviewer, usa:
+# BASE_PATH = "/codeviewer"
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 CLIENT_SECRETS_FILE = "credentials.json"
@@ -19,22 +26,25 @@ CLIENT_SECRETS_FILE = "credentials.json"
 
 @app.route("/")
 def inicio():
-    if "credentials" not in session:
-        return """
-        <h2>PSC Viewer</h2>
-        <p>Primero inicia sesión con Google:</p>
-        <a href="/login">Conectar con Google Drive</a>
-        """
+    conectado = "credentials" in session
 
-    return redirect(url_for("viewer"))
+    return render_template(
+        "inicio.html",
+        conectado=conectado,
+        login_url=f"{BASE_PATH}/login",
+        viewer_url=f"{BASE_PATH}/viewer",
+        base_path=BASE_PATH
+    )
 
 
 @app.route("/login")
 def login():
+    redirect_uri = url_for("oauth2callback", _external=True)
+
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
-        redirect_uri=url_for("oauth2callback", _external=True)
+        redirect_uri=redirect_uri
     )
 
     authorization_url, state = flow.authorization_url(
@@ -51,11 +61,13 @@ def login():
 
 @app.route("/oauth2callback")
 def oauth2callback():
+    redirect_uri = url_for("oauth2callback", _external=True)
+
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
         state=session.get("state"),
-        redirect_uri=url_for("oauth2callback", _external=True)
+        redirect_uri=redirect_uri
     )
 
     flow.code_verifier = session.get("code_verifier")
@@ -64,29 +76,54 @@ def oauth2callback():
     credentials = flow.credentials
     session["credentials"] = credentials_to_dict(credentials)
 
-    return redirect(url_for("viewer"))
+    return redirect(f"{BASE_PATH}/viewer")
 
 
 @app.route("/viewer")
 def viewer():
     if "credentials" not in session:
-        return redirect(url_for("login"))
+        return redirect(f"{BASE_PATH}/login")
 
     entrada = request.args.get("url") or request.args.get("fileId")
-    file_id = extraer_file_id(entrada)
+    file_id = None
+
+    if entrada:
+        file_id = extraer_file_id(entrada)
+
+    state = request.args.get("state")
+
+    if state:
+        try:
+            state_data = json.loads(state)
+            ids = state_data.get("ids", [])
+
+            if ids:
+                file_id = ids[0]
+
+        except Exception as e:
+            print("Error leyendo state:", e)
 
     nombre_usuario = "usuario"
     nombre_archivo = ""
     codigo = ""
-    mensaje = "Bienvenido. Pega una URL de Google Drive y presiona Mostrar."
+    lenguaje = "txt"
+    mensaje = "Bienvenido. Pega una URL de Google Drive™ y presiona Mostrar."
 
     credentials = Credentials(**session["credentials"])
     service = build("drive", "v3", credentials=credentials)
 
     try:
-        about = service.about().get(fields="user(displayName,emailAddress)").execute()
+        about = service.about().get(
+            fields="user(displayName,emailAddress)"
+        ).execute()
+
         user = about.get("user", {})
-        nombre_usuario = user.get("displayName") or user.get("emailAddress") or "usuario"
+        nombre_usuario = (
+            user.get("displayName")
+            or user.get("emailAddress")
+            or "usuario"
+        )
+
     except Exception:
         pass
 
@@ -97,8 +134,9 @@ def viewer():
                 fields="name,mimeType"
             ).execute()
 
-            nombre_archivo = metadata.get("name", "archivo.psc")
+            nombre_archivo = metadata.get("name", "archivo")
             codigo = descargar_archivo_drive(service, file_id)
+            lenguaje = detectar_lenguaje(nombre_archivo)
             mensaje = None
 
             session["credentials"] = credentials_to_dict(credentials)
@@ -111,7 +149,9 @@ def viewer():
         nombre_usuario=nombre_usuario,
         nombre_archivo=nombre_archivo,
         codigo=codigo,
-        mensaje=mensaje
+        lenguaje=lenguaje,
+        mensaje=mensaje,
+        base_path=BASE_PATH
     )
 
 
@@ -129,6 +169,7 @@ def extraer_file_id(valor):
 
     for patron in patrones:
         match = re.search(patron, valor)
+
         if match:
             return match.group(1)
 
@@ -142,6 +183,7 @@ def descargar_archivo_drive(service, file_id):
     downloader = MediaIoBaseDownload(archivo_memoria, request_drive)
 
     terminado = False
+
     while not terminado:
         status, terminado = downloader.next_chunk()
 
@@ -149,16 +191,67 @@ def descargar_archivo_drive(service, file_id):
 
     return decodificar_texto(contenido_bytes)
 
+
 def decodificar_texto(contenido_bytes):
-       codificaciones = ["utf-8", "utf-8-sig", "cp1252", "latin-1"]
+    codificaciones = [
+        "utf-8",
+        "utf-8-sig",
+        "cp1252",
+        "latin-1"
+    ]
 
-       for codificacion in codificaciones:
-          try:
-              return contenido_bytes.decode(codificacion)
-          except UnicodeDecodeError:
-              pass
+    for codificacion in codificaciones:
+        try:
+            return contenido_bytes.decode(codificacion)
+        except UnicodeDecodeError:
+            pass
 
-       return contenido_bytes.decode("latin-1", errors="replace")
+    return contenido_bytes.decode("latin-1", errors="replace")
+
+
+def detectar_lenguaje(nombre_archivo):
+    nombre = nombre_archivo.lower()
+
+    if nombre.endswith(".psc"):
+        return "psc"
+
+    if nombre.endswith((".cpp", ".cxx", ".cc", ".hpp", ".h")):
+        return "cpp"
+
+    if nombre.endswith(".c"):
+        return "c"
+
+    if nombre.endswith(".py"):
+        return "python"
+
+    if nombre.endswith(".java"):
+        return "java"
+
+    if nombre.endswith(".js"):
+        return "javascript"
+
+    if nombre.endswith(".html") or nombre.endswith(".htm"):
+        return "html"
+
+    if nombre.endswith(".css"):
+        return "css"
+
+    if nombre.endswith(".php"):
+        return "php"
+
+    if nombre.endswith(".sql"):
+        return "sql"
+
+    if nombre.endswith(".json"):
+        return "json"
+
+    if nombre.endswith(".xml"):
+        return "xml"
+
+    if nombre.endswith(".txt"):
+        return "txt"
+
+    return "txt"
 
 
 def credentials_to_dict(credentials):
@@ -173,4 +266,8 @@ def credentials_to_dict(credentials):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=5001,
+        debug=True
+    )

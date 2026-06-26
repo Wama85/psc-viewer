@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Viewer</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+
+<div class="hero">
+
+    <div class="overlay"></div>
+
+    <div class="contenido">
+
+        <img
+            src="{{ url_for('static', filename='logo.png') }}"
+            class="logo"
+        >
+
+        <h1>Code Viewer</h1>
+
+        <p class="subtitulo">
+            Visualiza archivos .psc de PSeInt directamente desde Google Drive.
+        </p>
+
+        <div class="botones">
+
+            <a href="/viewer" class="btn btn-primary">
+                Abrir aplicación
+            </a>
+
+            <a href="/privacity-viewer/" class="btn btn-secondary">
+                Política de privacidad
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<section class="features">
+
+    <div class="contenedor">
+
+        <h2>Características</h2>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Google Drive</h3>
+
+                <p>
+                    Abre archivos .psc directamente desde Google Drive.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Syntax Highlight</h3>
+
+                <p>
+                    Resaltado automático de pseudocódigo PSeInt.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Online</h3>
+
+                <p>
+                    Visualiza archivos desde el navegador sin descargarlos.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Educación</h3>
+
+                <p>
+                    Ideal para estudiantes y docentes de programación.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<footer>
+
+    <p>
+        PSC Viewer © 2026 - Desarrollado por SISWAMA
+    </p>
+
+    <div class="footer-links">
+
+        <a href="/privacity-viewer/">
+            Política de privacidad
+        </a>
+
+        <a href="/terms-pscview/">
+            Términos del servicio
+        </a>
+
+    </div>
+
+</footer>
+
+</body>
+</html>
